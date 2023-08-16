@@ -62,48 +62,47 @@ require("selenium-webdriver/chrome");
           await salvar(nome, await msg[msg.length - 2].getText());
           msg = await msg[msg.length - 2].getText();
 
-          switch (msg) {
-            case "1":
-              sendMsg(driver, 'Voce escolheu a opcao 1');
-              break;
-            case "2":
-              sendMsg(driver, 'Voce escolheu a opcao 2');
-              break;
-            case "3":
-              sendMsg(driver, 'Voce escolheu a opcao 3');
-              break;
-            case "datte".toUpperCase():
-              sendMsg(driver, 'baYOOOOOOOOOOOOOOOO');
-              break;
-            default :
-              sendMsg(driver,
-                "Escolha uma das opções a baixo: {{enter}} {{enter}} "+
-                "[ 1 ] teste 1.{{enter}} {{enter}}"+
-                "[ 2 ] teste 2{{enter}} {{enter}}"+
-                "[ 3 ] teste 3{{enter}} {{enter}}"+
-                "{{enter}}" +
-                "-------------------------- {{enter}} "+
-                "*Atenção:*{{enter}}"+
-                "_Este WhatsApp não recebe áudios, imagens ou ligações!_ {{enter}}"+
-                "Apenas mensagens de texto."
-              );
-              break;
-          }
+          ////////////////////////////////////INICIO ROTINA DE CONVERSAS/////////////////////////////////////////////////////////////////
+
+          let msgs;
+          const fs = require("fs");  //pegar historico de mensagens
+          fs.readFile("conversas/" + nome + ".txt", (err, his) => {
+            if(!err){
+              msgs = his.toString().split("{{|}}");    //msgs[msgs.length - 1] pega ultima msg. msgs[msgs.length - 2] pega a penultima.
 
 
+              switch (msgs[msgs.length - 1]) { // pega ultima msg.
+                case "1":
+                  sendMsg(driver, 'Voce escolheu a opcao 1');
+                  break;
+                case "2":
+                  sendMsg(driver, 'Voce escolheu a opcao 2');
+                  break;
+                case "3":
+                  salvarHistorico(nome)
+                  sendMsg(driver, 'Atendimento Finalizado');
+                  break;
+                default :
+                  sendMsg(driver,
+                    "Escolha uma das opções a baixo: {{enter}} {{enter}} "+
+                    "[ 1 ] teste 1.{{enter}} {{enter}}"+
+                    "[ 2 ] teste 2{{enter}} {{enter}}"+
+                    "[ 3 ] Finalizar{{enter}} {{enter}}"+
+                    "{{enter}}" +
+                    "-------------------------- {{enter}} "+
+                    "*Atenção:*{{enter}}"+
+                    "_Este WhatsApp não recebe áudios, imagens ou ligações!_ {{enter}}"+
+                    "Apenas mensagens de texto."
+                  );
+                  break;
+              }
 
-          // let msgs;
-          // const fs = require("fs");  //pegar historico de mensagens e salva em msgs
-          // fs.readFile("conversas/" + nome + ".txt", (err, his) => {
-          //   if(!err){
-          //     msgs = his.toString().split("{{|}}");    //msgs[msgs.length - 1] pega ultima msg. msgs[msgs.length - 2] pega a penultima.
-          //   }
-          // });
 
+            }
+          });
+
+          ////////////////////////////////////FIM ROTINA DE CONVERSAS/////////////////////////////////////////////////////////////////
           
-          // ao terminar a conversa salvar arquivo txt de conversas em pasta de historico separada
-          // depois excluir arquivo txt de conversas (colocar data no txt da conversa encerrada, que vai ficar no historico)
-          // ex.: historico/+55 11 9 1234-5678_01-01-2020.txt
         } catch (error) {console.log('erro ao procurar nome do contato-> '.error);}
       } catch (error) {console.log('erro pós msg nao lida-> '.error);}
     } catch (error) {console.log('erro whatsapp nao conectado-> '.error);}
@@ -134,4 +133,17 @@ async function salvar(nome, txt) {
       fs.writeFile("conversas/" + nome + ".txt", his + "{{|}}" + txt, () => {});
     }
   });
+}
+
+function salvarHistorico(nome) {
+  const fs = require("fs");
+  fs.readFile("conversas/" + nome + ".txt", (err, his) => {
+    if(!err){
+      var data = new Date();
+      fs.writeFile("historico/" + nome + '_' + data.getDate() + '-' + (data.getMonth() + 1) + '-' + data.getFullYear() + '_' + 
+      data.getHours() + '-' + data.getMinutes() + '-' + data.getSeconds() +
+      ".txt", his, () => {});
+    }
+  });
+  fs.unlink("conversas/" + nome + ".txt", () => {});
 }
