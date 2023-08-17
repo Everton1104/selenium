@@ -62,67 +62,66 @@ require("selenium-webdriver/chrome");
           await salvar(nome, await msg[msg.length - 2].getText());
           msg = await msg[msg.length - 2].getText();
 
-          ////////////////////////////////////INICIO ROTINA DE CONVERSAS/////////////////////////////////////////////////////////////////
+          ////////////////////////////////////INICIO ROTINA DE CONVERSAS////////////////////////////////////
 
           let msgs;
-          const fs = require("fs");  //pegar historico de mensagens
+          const fs = require("fs");  // pegar historico de mensagens
           fs.readFile("conversas/" + nome + ".txt", (err, his) => {
             if(!err){
-              msgs = his.toString().split("{{|}}");    //msgs[msgs.length - 1] pega ultima msg. msgs[msgs.length - 2] pega a penultima.
+              msgs = his.toString().split("{{|}}");    //msgs[msgs.length - 1] pega ultima msg. msgs[msgs.length - 2] pega a penultima. etc...
 
 
-              switch (msgs[msgs.length - 1]) { // pega ultima msg.
-                case "1":
-                  sendMsg(driver, 'Voce escolheu a opcao 1');
-                  break;
-                case "2":
-                  sendMsg(driver, 'Voce escolheu a opcao 2');
-                  break;
-                case "3":
-                  salvarHistorico(nome)
-                  sendMsg(driver, 'Atendimento Finalizado');
-                  break;
-                default :
-                  sendMsg(driver,
-                    "Escolha uma das opções a baixo: {{enter}} {{enter}} "+
-                    "[ 1 ] teste 1.{{enter}} {{enter}}"+
-                    "[ 2 ] teste 2{{enter}} {{enter}}"+
-                    "[ 3 ] Finalizar{{enter}} {{enter}}"+
-                    "{{enter}}" +
-                    "-------------------------- {{enter}} "+
-                    "*Atenção:*{{enter}}"+
-                    "_Este WhatsApp não recebe áudios, imagens ou ligações!_ {{enter}}"+
-                    "Apenas mensagens de texto."
-                  );
-                  break;
+              // INICIO DO CHAT
+
+              // RESPOSTAS DE NIVEL 2
+              if(msgs[msgs.length - 2] == "MAPA"){
+                fetch('https://viacep.com.br/ws/'+ msgs[msgs.length - 1] +'/json/')
+                    .then(response => response.json())
+                      .then(json => {
+                        sendMsg(driver, 'Endereço: ' + json.logradouro + '{{enter}}'+
+                        'Bairro: ' + json.bairro + '{{enter}}'+
+                        'Cidade: ' + json.localidade + '{{enter}}'+
+                        'Estado: ' + json.uf + '{{enter}}')
+                    })
+                    .catch(() => {sendMsg(driver, 'CEP não encontrado.')})
+                return;
               }
+              // RESPOSTAS DE NIVEL 1
+              else if(msgs[msgs.length - 1] == "MAPA"){
+                sendMsg(driver, 'Digite o CEP: {{enter}}');
+                return;
+              }else if(msgs[msgs.length - 1] == "FIM"){
+                salvarHistorico(nome)
+                sendMsg(driver, 'Atendimento Finalizado');
+              }else{
+                sendMsg(driver,
+                  "Olá, este é o Whatsapp da Assembleia de Deus em Jundiaí {{enter}}"+
+                  "Ainda estamos em fase de testes, vamos retornar em breve. {{enter}}"+
+                  "Agradecemos seu contato. {{enter}}"+
+                  "Deus te abençoe. {{enter}}"+
+                  " {{enter}}-------------------------- {{enter}}"+
+                  "*Aviso:*{{enter}}"+
+                  "_Este WhatsApp não recebe áudios, imagens ou ligações!_ {{enter}}"+
+                  "Apenas mensagens de texto."
+                );
+              }
+
+              // FIM DO CHAT
+
 
 
             }
           });
 
-          ////////////////////////////////////FIM ROTINA DE CONVERSAS/////////////////////////////////////////////////////////////////
+          ////////////////////////////////////FIM ROTINA DE CONVERSAS////////////////////////////////////
+
+          // FAZER ROTINA QUE DETECTA CONVERSAS OCIOSAS PARA ENCERRAR O ATENDIMENTO
           
         } catch (error) {console.log('erro ao procurar nome do contato-> '.error);}
       } catch (error) {console.log('erro pós msg nao lida-> '.error);}
     } catch (error) {console.log('erro whatsapp nao conectado-> '.error);}
   }, 5000);
 })();
-
-async function sendMsg(driver, txt) {
-  await driver.wait(
-    until.elementLocated(By.xpath('//div[@title="Mensagem"]')),
-    5000
-  );
-  if(txt.split('{{enter}}').length > 1){
-    txt.split('{{enter}}').forEach(async linha => {
-       await driver.findElement(By.xpath('//div[@title="Mensagem"]')).sendKeys(linha + ' ', Key.SHIFT + Key.ENTER);
-    });
-  }else{
-    await driver.findElement(By.xpath('//div[@title="Mensagem"]')).sendKeys(txt);
-  }
-  await driver.findElement(By.xpath('//div[@title="Mensagem"]')).sendKeys(Key.ENTER);
-}
 
 async function salvar(nome, txt) {
   const fs = require("fs");
@@ -133,6 +132,21 @@ async function salvar(nome, txt) {
       fs.writeFile("conversas/" + nome + ".txt", his + "{{|}}" + txt, () => {});
     }
   });
+}
+
+async function sendMsg(driver, txt) {
+  await driver.wait(
+      until.elementLocated(By.xpath('//div[@title="Mensagem"]')),
+      5000
+  );
+  if(txt.split('{{enter}}').length > 1){
+      txt.split('{{enter}}').forEach(async linha => {
+          await driver.findElement(By.xpath('//div[@title="Mensagem"]')).sendKeys(linha + ' ', Key.SHIFT + Key.ENTER);
+      });
+  }else{
+      await driver.findElement(By.xpath('//div[@title="Mensagem"]')).sendKeys(txt);
+  }
+  await driver.findElement(By.xpath('//div[@title="Mensagem"]')).sendKeys(Key.ENTER);
 }
 
 function salvarHistorico(nome) {
