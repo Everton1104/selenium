@@ -81,7 +81,8 @@ require("selenium-webdriver/chrome");
                         sendMsg(driver, 'Endereço: ' + json.logradouro + '{{enter}}'+
                         'Bairro: ' + json.bairro + '{{enter}}'+
                         'Cidade: ' + json.localidade + '{{enter}}'+
-                        'Estado: ' + json.uf + '{{enter}}')
+                        'Estado: ' + json.uf + '{{enter}}'+
+                        'Digite MAPA para pesquisar outro CEP ou FIM para finalizar.')
                     })
                     .catch(() => {sendMsg(driver, 'CEP não encontrado.')})
                 return;
@@ -101,7 +102,7 @@ require("selenium-webdriver/chrome");
                   "Deus te abençoe. {{enter}}"+
                   " {{enter}}-------------------------- {{enter}}"+
                   "*Aviso:*{{enter}}"+
-                  "_Este WhatsApp não recebe áudios, imagens ou ligações!_ {{enter}}"+
+                  "_Este WhatsApp *NÃO* recebe áudios, imagens ou ligações!_ {{enter}}"+
                   "Apenas mensagens de texto."
                 );
               }
