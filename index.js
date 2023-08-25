@@ -100,13 +100,14 @@ let driver = new Builder()
             console.log("enviando msg padrao");
             await sendMsg(driver,
               "Olá, este é o Whatsapp da Assembleia de Deus em Jundiaí {{enter}}"+
-              "Ainda estamos em fase de testes, vamos retornar em breve. {{enter}}"+
+              "Ainda não estamos atendendo por essa plataforma. {{enter}}"+
               "Agradecemos seu contato. {{enter}}"+
               "Deus te abençoe. {{enter}}"+
               " {{enter}}-------------------------- {{enter}}"+
               "*Aviso:*{{enter}}"+
-              "_Este WhatsApp *NÃO* recebe áudios, imagens ou ligações!_ {{enter}}"+
-              "Apenas mensagens de texto."
+              "_Este WhatsApp *NÃO* recebe áudios, imagens ou ligações do WhatsApp_ {{enter}}"+
+              "Apenas mensagens de texto.{{enter}}"+
+              "Para mais informações ligue para 11 4586-5878."
             );
             // FIM DO CHAT
         }
