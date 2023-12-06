@@ -19,12 +19,12 @@ let driver = new Builder()
         //VAI PARA O GRUPO DE PIVO QUANDO OCIOSO
         await driver.findElement(By.xpath('//span[@title="' + pivo + '"]')).click();
       }
+      console.log("Aguardando mensagem...");
       // DETECTA MENSAGEM NÃO LIDA E ABRE A CONVERSA
       if (await driver.findElement(By.xpath('//span[contains(@aria-label,"ão lida")]')).isDisplayed()) {
         await driver.findElement(By.xpath('//span[contains(@aria-label,"ão lida")]')).click();
-        console.log("Nova mensagem");
         // ABRE O MENU
-        menu(driver, msgs);
+        menu(driver);
       }
     }catch(err){}
   }, 5000);

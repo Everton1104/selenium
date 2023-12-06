@@ -1,39 +1,44 @@
 const {By, Key, until } = require("selenium-webdriver");
-let nome = "numero nao identificado";
-const menu = (driver, msgs)=>{
-  console.log(msgs);
-  sendMsg(driver, 'mensagem recebida.')
+const menu = async (driver)=>{
+  // PROCURA O NOME OU NUMERO DO CONTATO
+  let nome = "numero nao identificado";
+  if (await driver.findElement(By.xpath('//div[@id="main"]/header/div[2]/div/div/div/span')).isDisplayed()) {
+    nome = await driver.findElement(By.xpath('//div[@id="main"]/header/div[2]/div/div/div/span')).getText();
+    console.log("Mensagem de " + nome);
+  }
+  // RECUPERA HISTORICO DE MENSAGENS
+  let msgs;
+  const fs = require("fs");  
+  fs.readFile("conversas/" + nome + ".txt", async (err, his) => {
+    if(!err){
+      msgs = his.toString().split("{{|}}");    //msgs[msgs.length - 1] pega ultima msg. msgs[msgs.length - 2] pega a penultima. etc...
+    }
+  });
+  //  PEGA A MENSAGEM QUE FOI ENVIADA
+  let msg = await driver.findElements(By.xpath('//div[contains(@data-pre-plain-text, "' + nome +'")]/div/span/span'));
+  msg = await msg[msg.length - 2].getText();
+  await salvar(nome, await msg);
 }
+module.exports = { menu }
 
-module.exports = {menu}
+async function salvar(nome, txt) {
+  const fs = require("fs");
+  fs.readFile("conversas/" + nome + ".txt", (err, his) => {
+    if(err){
+      fs.writeFile("conversas/" + nome + ".txt", txt, () => {});
+    }else{
+      fs.writeFile("conversas/" + nome + ".txt", his + "{{|}}" + txt, () => {});
+    }
+  });
+}
 
 
 /*
 
+        
 
 
-        // PROCURA O NOME OU NUMERO DO CONTATO
-        if (await driver.findElement(By.xpath('//div[@id="main"]/header/div[2]/div/div/span')).isDisplayed()) {
-          // SALVA O NOME OU NUMERO EM VARIAVEL
-          nome = await driver.findElement(By.xpath('//div[@id="main"]/header/div[2]/div/div/span')).getText();
-          console.log("nome->"+nome);
-        }
-
-        //salvar a ultima mensagem recebida
-        let msg = await driver.findElements(By.xpath('//div[contains(@data-pre-plain-text, "' + nome +'")]/div/span/span'));
-        await salvar(nome, await msg[msg.length - 2].getText());
-        console.log("msg salva");
-        msg = await msg[msg.length - 2].getText();
-
-
-        // RECUPERA HISTORICO DE MENSAGENS
-        let msgs;
-        const fs = require("fs");  
-        fs.readFile("conversas/" + nome + ".txt", async (err, his) => {
-          if(!err){
-            msgs = his.toString().split("{{|}}");    //msgs[msgs.length - 1] pega ultima msg. msgs[msgs.length - 2] pega a penultima. etc...
-          }
-        });
+        
 
 
             // INICIO DO CHAT
@@ -98,19 +103,10 @@ module.exports = {menu}
                 "Para mais informações ligue para 11 4586-5878."
               );
               // FIM DO CHAT
-*/
 
 
-async function salvar(nome, txt) {
-    const fs = require("fs");
-    fs.readFile("conversas/" + nome + ".txt", (err, his) => {
-      if(err){
-        fs.writeFile("conversas/" + nome + ".txt", txt, () => {});
-      }else{
-        fs.writeFile("conversas/" + nome + ".txt", his + "{{|}}" + txt, () => {});
-      }
-    });
-  }
+
+
   
   async function sendMsg(driver, txt) {
     await driver.wait(
@@ -166,5 +162,5 @@ async function salvar(nome, txt) {
     }
   }
   
-
+*/
 
