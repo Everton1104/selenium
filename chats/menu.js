@@ -1,6 +1,8 @@
-
-const menu = ()=>{
-
+const {By, Key, until } = require("selenium-webdriver");
+let nome = "numero nao identificado";
+const menu = (driver, msgs)=>{
+  console.log(msgs);
+  sendMsg(driver, 'mensagem recebida.')
 }
 
 module.exports = {menu}
