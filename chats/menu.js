@@ -16,51 +16,56 @@ const menu = async (driver)=>{
     nome = await driver.findElement(By.xpath('//div[@id="main"]/header/div[2]/div/div/div/span')).getText();
     console.log("Mensagem de " + nome);
   }
-  let menuAtual = await driver.findElements(By.xpath('//strong[@data-app-text-template]'));
-  menuAtual = await menuAtual[menuAtual.length - 1].getText();
-  let msg = await driver.findElements(By.xpath('//div[contains(@data-pre-plain-text, "' + nome +'")]/div/span/span'));
-  msg = await msg[msg.length - 2].getText();
-  await salvar(nome, await msg);
-  switch (msg) {
-    case "MENU":
-      sendMsg(driver, menuPrincipal)
-      return;
-    case "Menu":
-      sendMsg(driver, menuPrincipal)
-      return;
-    case "menu":
-      sendMsg(driver, menuPrincipal)
-      return;
-  }
+  try {
+    let menuAtual = await driver.findElements(By.xpath('//strong[@data-app-text-template]'));
+    menuAtual = await menuAtual[menuAtual.length - 1].getText();
+    let msg = await driver.findElements(By.xpath('//div[contains(@data-pre-plain-text, "' + nome +'")]/div/span/span'));
+    msg = await msg[msg.length - 2].getText();
+    await salvar(nome, await msg);
+    switch (msg) {
+      case "MENU":
+        sendMsg(driver, menuPrincipal)
+        return;
+      case "Menu":
+        sendMsg(driver, menuPrincipal)
+        return;
+      case "menu":
+        sendMsg(driver, menuPrincipal)
+        return;
+    }
 
-  /*
-    verificar data para voltar no menu principal e  arquivar conversa
-  */
+    /*
+      verificar data para voltar no menu principal e  arquivar conversa
+    */
 
 
-  switch (menuAtual) {
-    case 'Menu Principal':
-      switch (msg) {
-        case "1":
-          cep(driver)
-        break;
-        case "2":
-          sendMsg(driver, "Opção escolhida -> 2")
-        break;
-        case "3":
-          sendMsg(driver, "Opção escolhida -> 3")
-        break;
-        default:
-          sendMsg(driver, "Opção não reconhecida!{{enter}}Digite apenas o número da opção desejada.{{enter}}Ou digite MENU para ver as opções.")
-        break;
-      }
-    break;
-    case "Buscar CEP":
-      cep(driver, msg)
-    break;
-    default:
-      sendMsg(driver, menuPrincipal)
-    break;
+    switch (menuAtual) {
+      case 'Menu Principal':
+        switch (msg) {
+          case "1":
+            cep(driver)
+          break;
+          case "2":
+            sendMsg(driver, "Opção escolhida -> 2")
+          break;
+          case "3":
+            sendMsg(driver, "Opção escolhida -> 3")
+          break;
+          default:
+            sendMsg(driver, "Opção não reconhecida!{{enter}}Digite apenas o número da opção desejada.{{enter}}Ou digite MENU para ver as opções.")
+          break;
+        }
+      break;
+      case "Buscar CEP":
+        cep(driver, msg)
+      break;
+      default:
+        sendMsg(driver, menuPrincipal)
+      break;
+    }
+  } catch (error) {
+    sendMsg(driver, menuPrincipal)
+    return;
   }
 }
 module.exports = { menu }
