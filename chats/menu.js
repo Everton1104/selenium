@@ -32,6 +32,12 @@ const menu = async (driver)=>{
       sendMsg(driver, menuPrincipal)
       return;
   }
+
+  /*
+    verificar data para voltar no menu principal e  arquivar conversa
+  */
+
+
   switch (menuAtual) {
     case 'Menu Principal':
       switch (msg) {
@@ -64,7 +70,11 @@ async function salvar(nome, txt) {
     if(err){
       fs.writeFile("conversas/" + nome + ".txt", txt, () => {});
     }else{
-      fs.writeFile("conversas/" + nome + ".txt", his + "{{|}}" + txt, () => {});
+      let data = new Date();
+      fs.writeFile("conversas/" + nome + ".txt", his + "{{|}}" + txt + 
+        "-data->" + data.getFullYear() + '-' + (data.getMonth() + 1) + '-' + data.getDate() + ' ' + 
+        data.getHours() + ':' + data.getMinutes() + ':' + data.getUTCSeconds()
+      , () => {});
     }
   });
 }
