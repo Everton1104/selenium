@@ -1,28 +1,65 @@
-const {By, Key, until } = require("selenium-webdriver");
+let {By, Key, until } = require("selenium-webdriver");
+let fs = require("fs");
+const { cep } = require("./cep/cep.js");
+
+let menuPrincipal = 
+  "*Menu Principal*{{enter}}"+
+  "opções:{{enter}}"+
+  "[ 1 ] - Buscar CEP{{enter}}"+
+  "[ 2 ] - teste2{{enter}}"+
+  "[ 3 ] - teste3{{enter}}"+
+  "Digite o numero de uma das opções acima:";
+
 const menu = async (driver)=>{
-  // PROCURA O NOME OU NUMERO DO CONTATO
   let nome = "numero nao identificado";
   if (await driver.findElement(By.xpath('//div[@id="main"]/header/div[2]/div/div/div/span')).isDisplayed()) {
     nome = await driver.findElement(By.xpath('//div[@id="main"]/header/div[2]/div/div/div/span')).getText();
     console.log("Mensagem de " + nome);
   }
-  // RECUPERA HISTORICO DE MENSAGENS
-  let msgs;
-  const fs = require("fs");  
-  fs.readFile("conversas/" + nome + ".txt", async (err, his) => {
-    if(!err){
-      msgs = his.toString().split("{{|}}");    //msgs[msgs.length - 1] pega ultima msg. msgs[msgs.length - 2] pega a penultima. etc...
-    }
-  });
-  //  PEGA A MENSAGEM QUE FOI ENVIADA
+  let menuAtual = await driver.findElements(By.xpath('//strong[@data-app-text-template]'));
+  menuAtual = await menuAtual[menuAtual.length - 1].getText();
   let msg = await driver.findElements(By.xpath('//div[contains(@data-pre-plain-text, "' + nome +'")]/div/span/span'));
   msg = await msg[msg.length - 2].getText();
   await salvar(nome, await msg);
+  switch (msg) {
+    case "MENU":
+      sendMsg(driver, menuPrincipal)
+      return;
+    case "Menu":
+      sendMsg(driver, menuPrincipal)
+      return;
+    case "menu":
+      sendMsg(driver, menuPrincipal)
+      return;
+  }
+  switch (menuAtual) {
+    case 'Menu Principal':
+      switch (msg) {
+        case "1":
+          cep(driver)
+        break;
+        case "2":
+          sendMsg(driver, "Opção escolhida -> 2")
+        break;
+        case "3":
+          sendMsg(driver, "Opção escolhida -> 3")
+        break;
+        default:
+          sendMsg(driver, "Opção não reconhecida!{{enter}}Digite apenas o número da opção desejada.{{enter}}Ou digite MENU para ver as opções.")
+        break;
+      }
+    break;
+    case "Buscar CEP":
+      cep(driver, msg)
+    break;
+    default:
+      sendMsg(driver, menuPrincipal)
+    break;
+  }
 }
 module.exports = { menu }
 
 async function salvar(nome, txt) {
-  const fs = require("fs");
   fs.readFile("conversas/" + nome + ".txt", (err, his) => {
     if(err){
       fs.writeFile("conversas/" + nome + ".txt", txt, () => {});
@@ -32,14 +69,19 @@ async function salvar(nome, txt) {
   });
 }
 
+async function sendMsg(driver, txt) {
+  await driver.wait(until.elementLocated(By.xpath('//div[contains(@title, "Digite")]')),5000);
+  if(txt.split('{{enter}}').length > 1){
+      txt.split('{{enter}}').forEach(async linha => {
+          await driver.findElement(By.xpath('//div[contains(@title, "Digite")]')).sendKeys(linha + ' ', Key.SHIFT + Key.ENTER);
+      });
+  }else{
+      await driver.findElement(By.xpath('//div[contains(@title, "Digite")]')).sendKeys(txt);
+  }
+  await driver.findElement(By.xpath('//div[contains(@title, "Digite")]')).sendKeys(Key.ENTER);
+}
 
 /*
-
-        
-
-
-        
-
 
             // INICIO DO CHAT
 
@@ -104,25 +146,6 @@ async function salvar(nome, txt) {
               );
               // FIM DO CHAT
 
-
-
-
-  
-  async function sendMsg(driver, txt) {
-    await driver.wait(
-        until.elementLocated(By.xpath('//div[@title="Mensagem"]')),
-        5000
-    );
-    if(txt.split('{{enter}}').length > 1){
-        txt.split('{{enter}}').forEach(async linha => {
-            await driver.findElement(By.xpath('//div[@title="Mensagem"]')).sendKeys(linha + ' ', Key.SHIFT + Key.ENTER);
-        });
-    }else{
-        await driver.findElement(By.xpath('//div[@title="Mensagem"]')).sendKeys(txt);
-    }
-    await driver.findElement(By.xpath('//div[@title="Mensagem"]')).sendKeys(Key.ENTER);
-  }
-  
   async function salvarHistorico(nome) {
     const fs = require("fs");
     fs.readFile("conversas/" + nome + ".txt", (err, his) => {
